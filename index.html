@@ -58,7 +58,7 @@
     <div id="menu">
       <button onclick="startQuiz('mixed')">Quiz misto</button>
       <button onclick="startQuiz('type1')">Che alterazioni ha la scala?</button>
-      <button onclick="startQuiz('type2')">Quale scala ha questa alterazione?</button>
+      <button onclick="startQuiz('type2')">Quale scala ha queste alterazioni?</button>
     </div>
     <div id="quiz" class="hidden">
       <div class="question" id="question"></div>
@@ -95,20 +95,19 @@
       questions = [];
 
       keys.forEach(scale => {
+        const alterations = scales[scale].length ? scales[scale].join(', ') : 'Nessuna';
         if (type === 'type1' || type === 'mixed') {
           questions.push({
             q: `Che alterazioni ha la scala di ${scale}?`,
-            correct: scales[scale].length ? scales[scale].join(', ') : 'Nessuna',
-            options: shuffleOptions(scales[scale], 'alterations')
+            correct: alterations,
+            options: shuffleOptions(alterations, 'alterations')
           });
         }
         if (type === 'type2' || type === 'mixed') {
-          scales[scale].forEach(alter => {
-            questions.push({
-              q: `Quale scala ha ${alter}?`,
-              correct: scale,
-              options: shuffleOptions(scale, 'scale')
-            });
+          questions.push({
+            q: `Quale scala ha ${alterations}?`,
+            correct: scale,
+            options: shuffleOptions(scale, 'scale')
           });
         }
       });
@@ -118,8 +117,8 @@
     function shuffleOptions(correct, mode) {
       let options = [];
       if (mode === 'alterations') {
-        const altList = Object.values(scales).map(a => a.join(', ') || 'Nessuna');
-        options = Array.from(new Set([correct.length ? correct.join(', ') : 'Nessuna', ...shuffleArray(altList).slice(0,3)]));
+        const altList = Object.values(scales).map(a => a.length ? a.join(', ') : 'Nessuna');
+        options = Array.from(new Set([correct, ...shuffleArray(altList).slice(0,3)]));
       } else {
         const scaleList = Object.keys(scales);
         options = Array.from(new Set([correct, ...shuffleArray(scaleList).slice(0,3)]));
