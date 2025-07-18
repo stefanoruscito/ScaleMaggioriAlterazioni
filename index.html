@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Alterazioni Scale Maggiori</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon.png">
+  <meta name="theme-color" content="#d6e3f0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #f8f1e4, #d6e3f0);
+      color: #333;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+    button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 15px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+      background: #fff;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #f0f0f0;
+    }
+    .question {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+    }
+    .feedback {
+      font-size: 1.2rem;
+      margin: 10px 0;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Quiz Alterazioni Scale Maggiori</h1>
+    <div id="menu">
+      <button onclick="startQuiz('mixed')">Quiz misto</button>
+      <button onclick="startQuiz('type1')">Che alterazioni ha la scala?</button>
+      <button onclick="startQuiz('type2')">Quale scala ha questa alterazione?</button>
+    </div>
+    <div id="quiz" class="hidden">
+      <div class="question" id="question"></div>
+      <div id="options"></div>
+      <div class="feedback" id="feedback"></div>
+      <button onclick="backToMenu()">Torna al menu</button>
+    </div>
+  </div>
+
+  <script>
+    const scales = {
+      'C': [],
+      'G': ['F#'],
+      'D': ['F#', 'C#'],
+      'A': ['F#', 'C#', 'G#'],
+      'E': ['F#', 'C#', 'G#', 'D#'],
+      'B': ['F#', 'C#', 'G#', 'D#', 'A#'],
+      'F#': ['F#', 'C#', 'G#', 'D#', 'A#', 'E#'],
+      'C#': ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#'],
+      'F': ['Bb'],
+      'Bb': ['Bb', 'Eb'],
+      'Eb': ['Bb', 'Eb', 'Ab'],
+      'Ab': ['Bb', 'Eb', 'Ab', 'Db'],
+      'Db': ['Bb', 'Eb', 'Ab', 'Db', 'Gb'],
+      'Gb': ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'],
+      'Cb': ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb']
+    };
+
+    let questions = [];
+    let currentQuestion = 0;
+
+    function generateQuestions(type) {
+      const keys = Object.keys(scales);
+      questions = [];
+
+      keys.forEach(scale => {
+        if (type === 'type1' || type === 'mixed') {
+          questions.push({
+            q: `Che alterazioni ha la scala di ${scale}?`,
+            correct: scales[scale].length ? scales[scale].join(', ') : 'Nessuna',
+            options: shuffleOptions(scales[scale], 'alterations')
+          });
+        }
+        if (type === 'type2' || type === 'mixed') {
+          scales[scale].forEach(alter => {
+            questions.push({
+              q: `Quale scala ha ${alter}?`,
+              correct: scale,
+              options: shuffleOptions(scale, 'scale')
+            });
+          });
+        }
+      });
+      questions = shuffleArray(questions);
+    }
+
+    function shuffleOptions(correct, mode) {
+      let options = [];
+      if (mode === 'alterations') {
+        const altList = Object.values(scales).map(a => a.join(', ') || 'Nessuna');
+        options = Array.from(new Set([correct.length ? correct.join(', ') : 'Nessuna', ...shuffleArray(altList).slice(0,3)]));
+      } else {
+        const scaleList = Object.keys(scales);
+        options = Array.from(new Set([correct, ...shuffleArray(scaleList).slice(0,3)]));
+      }
+      return shuffleArray(options).slice(0,4);
+    }
+
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz(type) {
+      generateQuestions(type);
+      currentQuestion = 0;
+      document.getElementById('menu').classList.add('hidden');
+      document.getElementById('quiz').classList.remove('hidden');
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById('question').textContent = q.q;
+      const optionsDiv = document.getElementById('options');
+      optionsDiv.innerHTML = '';
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(opt);
+        optionsDiv.appendChild(btn);
+      });
+      document.getElementById('feedback').textContent = '';
+    }
+
+    function checkAnswer(answer) {
+      const q = questions[currentQuestion];
+      if (answer === q.correct) {
+        document.getElementById('feedback').textContent = '✅ Corretto!';
+      } else {
+        document.getElementById('feedback').textContent = `❌ Sbagliato! Risposta corretta: ${q.correct}`;
+      }
+      setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          showQuestion();
+        } else {
+          document.getElementById('feedback').textContent = 'Quiz terminato!';
+        }
+      }, 1200);
+    }
+
+    function backToMenu() {
+      document.getElementById('quiz').classList.add('hidden');
+      document.getElementById('menu').classList.remove('hidden');
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+</body>
+</html>
